@@ -11,9 +11,9 @@ async function validateCreatePost(req, res, next) {
         return res.sendStatus(404);
     };
 
-    if (findTokenUser.rows[0].id !== parseInt(findShortUrl.rows[0].id_user)) {
+    /* if (findTokenUser.rows[0].id !== findTokenUser.rows[0].id_user) {
         return res.sendStatus(401)
-    };
+    }; */
 
     res.locals.user = findTokenUser;
 

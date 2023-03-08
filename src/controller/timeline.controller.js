@@ -26,7 +26,7 @@ async function getTimeline(req, res) {
     try {
 
         const fedd = await db.query(`
-        SELECT * FROM users.id, users.name, posts.*, count(likes.post_id) AS count_likes, likes.user_id
+        SELECT users.id, users.name, posts.*, count(likes.post_id) AS count_likes, likes.user_id
         FROM users
         JOIN posts
         ON users.id = posts.user_id
