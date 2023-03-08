@@ -2,9 +2,8 @@ import express from "express";
 import cors from "cors"
 import hashtagRouter from "./router/hashtag.router.js";
 import dotenv from 'dotenv'
+import userRouter from "./router/user.router.js";
 dotenv.config()
-
-import userRouter from "../src/Routers/UserRouter.js"
 
 const server = express()
 server.use(express.json())
