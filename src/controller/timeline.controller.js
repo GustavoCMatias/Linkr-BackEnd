@@ -1,4 +1,4 @@
-import db from '../database/database.connection.js'
+import { db } from '../database/database.connection.js'
 import { validateCreatePost } from '../middleware/timeline.middleware.js'
 
 async function createPost(req, res) {
@@ -10,7 +10,7 @@ async function createPost(req, res) {
         await db.query(`
         INSERT INTO posts (link, message, user_id)
         VALUES ($1, $2, $3)`,
-        [link, message, findUser.rows[0].user_id])
+            [link, message, findUser.rows[0].user_id])
 
         res.status(201)
     } catch (error) {
@@ -20,6 +20,8 @@ async function createPost(req, res) {
 }
 
 async function getTimeline(req, res) {
+
+    // uso o validate que já está no middleware acima?
 
     try {
 
