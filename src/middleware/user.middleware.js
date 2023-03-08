@@ -1,5 +1,6 @@
 import { db } from "../database/database.connection.js";
 import bcrypt from 'bcrypt';
+import { v4 as uuidV4 } from "uuid";
 
 export async function registerVerifications(req, res, next) {
     const { email, password, username, picture_url } = req.body;
