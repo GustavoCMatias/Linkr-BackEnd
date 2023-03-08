@@ -5,6 +5,7 @@
 
 # testing
 /coverage
+auxTable.sql
 
 # production
 /build
