@@ -2,13 +2,14 @@ import express from "express";
 import cors from "cors"
 import hashtagRouter from "./router/hashtag.router.js";
 import dotenv from 'dotenv'
+import usersRouter from "./router/users.router.js";
 import userRouter from "./router/user.router.js";
 dotenv.config()
 
 const server = express()
 server.use(express.json())
 server.use(cors())
-server.use([hashtagRouter])
+server.use([hashtagRouter, usersRouter])
 server.use(userRouter);
 
 const port = process.env.PORT || 5000;

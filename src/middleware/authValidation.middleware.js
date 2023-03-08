@@ -8,7 +8,7 @@ export default async function tokenValidation(req, res, next){
     if(!token) return res.sendStatus(401)
 
     try{
-        const row_info = searchToken(token)
+        const row_info = await searchToken(token)
 
         if(row_info[1] === 0) return res.sendStatus(401)
         res.locals.user = row_info[0][0].user_id
