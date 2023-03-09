@@ -40,9 +40,6 @@ async function validateDeleteOrPut(req, res, next) {
     if (!findPost.rows.length) {
         return res.sendStatus(404);
     };
-
-    console.log(userSession.rows[0].user_id)
-    console.log(findPost.rows[0].user_id)
     
     if (userSession.rows[0].user_id !== findPost.rows[0].user_id) {
         return res.sendStatus(401)
