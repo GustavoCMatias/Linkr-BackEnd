@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { createPost, GetMetadataFromLink, getTimeline } from "../controller/timeline.controller.js";
-import { validateCreatePost } from "../middleware/timeline.middleware.js";
+import { createPost, deletePost, getTimeline, GetMetadataFromLink, updatePost } from "../controller/timeline.controller.js";
+import { deleteLikesPost, validateCreatePost, validateDeleteOrPut, validateToken } from "../middleware/timeline.middleware.js";
 
 const feed = Router()
 
-feed.post('/timeline', validateCreatePost, createPost)
+feed.post('/timeline', validateToken, validateCreatePost, createPost)
 feed.get('/timeline', getTimeline)
+feed.put('/timeline/:id', validateToken, validateDeleteOrPut, validateCreatePost, updatePost)
+feed.delete('/timeline/:id', validateToken, validateDeleteOrPut, deleteLikesPost, deletePost)
 feed.get('/link',GetMetadataFromLink)
-// Ver com o time se preciso de 2 rotas (get e post), visto que a página é tanto 'get' como 'post' (pensando na validação do token)
 
 export {
     feed
