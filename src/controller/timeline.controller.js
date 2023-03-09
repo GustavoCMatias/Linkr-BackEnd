@@ -41,7 +41,7 @@ async function getTimeline(req, res) {
         res.status(200).send(fedd.rows)
 
     } catch (error) {
-        send.status(500).send(error.message)
+        res.status(500).send(error.message)
     }
 }
 
