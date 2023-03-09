@@ -1,9 +1,9 @@
 import { Router } from "express";
+import { getbyHashtag } from "../controller/hashtag.controller.js";
 import tokenValidation from "../middleware/authValidation.middleware.js";
-import { getPostsByHashtag } from "../repository/hashtag.repository.js";
 
 const hashtagRouter = Router()
 
-hashtagRouter.get("/hashtag/:hashtag", tokenValidation, getPostsByHashtag)
+hashtagRouter.get("/hashtag/:hashtag", tokenValidation, getbyHashtag)
 
 export default hashtagRouter
