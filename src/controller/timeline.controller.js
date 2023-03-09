@@ -1,6 +1,5 @@
 import { getLinkPreview } from 'link-preview-js'
 import { db } from '../database/database.connection.js'
-import { validateCreatePost } from '../middleware/timeline.middleware.js'
 
 async function createPost(req, res) {
 
@@ -8,12 +7,13 @@ async function createPost(req, res) {
     const findUser = res.locals.user
 
     try {
+        console.log("tô aqui")
         await db.query(`
         INSERT INTO posts (link, message, user_id)
         VALUES ($1, $2, $3)`,
             [link, message, findUser.rows[0].user_id])
-
-        res.status(201)
+        console.log("cheguei")
+        res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
     }
@@ -22,23 +22,64 @@ async function createPost(req, res) {
 
 async function getTimeline(req, res) {
 
-    // uso o validate que já está no middleware acima?
-
     try {
+        /* await db.query('INSERT INTO likes (post_id, user_id) VALUES (13, 4);') */
 
-        const fedd = await db.query(`
-        SELECT users.id, users.name, posts.*, count(likes.post_id) AS count_likes, likes.user_id
+        const feed = await db.query(`
+        SELECT
+        users.id AS user_id, users.username,
+        posts.id AS post_id, posts.link, posts.message, posts.created_at,
+        count(likes.post_id) AS count_likes
         FROM users
         JOIN posts
         ON users.id = posts.user_id
-        JOIN likes
+        LEFT JOIN likes
         ON posts.id = likes.post_id
-        GROUP BY users.id
+        GROUP BY users.id, posts.id
         ORDER BY posts.created_at DESC
         LIMIT 20;
         `)
 
-        res.status(200).send(fedd.rows)
+        // PENSAR EM UM JEITO DE RENDERIZAR O NOME DAS PESSOAS QUE CURTIRAM
+        
+        const trending = await db.query(`
+        SELECT count(hashtags.id) AS count_trending
+        FROM hashtags
+        ORDER BY count_trending DESC
+        LIMIT 10;
+        `)
+
+        res.status(200).send(feed.rows);
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+}
+
+async function deletePost(req, res) {
+
+    const { id } = req.params
+
+    try {
+        await db.query(`DELETE FROM posts WHERE id = $1`, [id])
+
+        res.sendStatus(204);
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+}
+
+async function updatePost(req, res) {
+
+    const { link, message } = req.body
+    const { id } = req.params
+
+    try {
+
+        await db.query(`UPDATE posts SET link = $1, message = $2 WHERE id = $3`, [link, message, id])
+
+        res.sendStatus(204);
 
     } catch (error) {
         res.status(500).send(error.message)
@@ -63,5 +104,7 @@ async function GetMetadataFromLink(req, res) {
 export {
     createPost,
     getTimeline,
-    GetMetadataFromLink
+    GetMetadataFromLink,
+    deletePost,
+    updatePost
 }
