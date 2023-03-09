@@ -6,7 +6,7 @@ export async function searchUserById(userId){
 }
 
 export async function searchUsersByString(string){
-    const {rows}= await db.query("SELECT id, name, picture_url as picture FROM users WHERE position($1 in name)>0",[string]);
+    const {rows}= await db.query("SELECT id, username, picture_url as picture FROM users WHERE position($1 in username)>0",[string]);
     return rows;
 }
 
