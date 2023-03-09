@@ -6,12 +6,11 @@ async function createPost(req, res) {
     const findUser = res.locals.user
 
     try {
-        console.log("tô aqui")
         await db.query(`
         INSERT INTO posts (link, message, user_id)
         VALUES ($1, $2, $3)`,
             [link, message, findUser.rows[0].user_id])
-        console.log("cheguei")
+
         res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
@@ -22,7 +21,6 @@ async function createPost(req, res) {
 async function getTimeline(req, res) {
 
     try {
-        /* await db.query('INSERT INTO likes (post_id, user_id) VALUES (13, 4);') */
 
         const feed = await db.query(`
         SELECT
