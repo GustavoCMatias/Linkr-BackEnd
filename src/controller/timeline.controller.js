@@ -1,3 +1,4 @@
+import { getLinkPreview } from 'link-preview-js'
 import { db } from '../database/database.connection.js'
 
 async function createPost(req, res) {
@@ -83,9 +84,25 @@ async function updatePost(req, res) {
     }
 }
 
+async function GetMetadataFromLink(req, res) {
+    const {url} = req.body;
+    getLinkPreview(url).then((data) => {
+        console.debug(data);
+        const response = {
+            url: data.url,
+            title: data.title,
+            description: data.description,
+            image: data.images
+        }
+        res.send(response);
+    })
+    .catch(err=>res.status(500).send());
+}
+
 export {
     createPost,
     getTimeline,
     deletePost,
-    updatePost
+    updatePost,
+    GetMetadataFromLink
 }

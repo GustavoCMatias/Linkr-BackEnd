@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { getbyHashtag, trendingHashtags } from "../controller/hashtag.controller.js";
 import tokenValidation from "../middleware/authValidation.middleware.js";
-import { getPostsByHashtag } from "../repository/hashtag.repository.js";
 
 const hashtagRouter = Router()
 
-hashtagRouter.get("/hashtag/:hashtag", tokenValidation, getPostsByHashtag)
+hashtagRouter.get("/hashtag/:hashtag", tokenValidation, getbyHashtag)
+hashtagRouter.get("/trending/hashtag", trendingHashtags)
 
 export default hashtagRouter
