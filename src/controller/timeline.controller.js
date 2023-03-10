@@ -96,9 +96,8 @@ async function updatePost(req, res) {
 }
 
 async function GetMetadataFromLink(req, res) {
-    const {url} = req.body;
+    const {url} = req.headers;
     getLinkPreview(url).then((data) => {
-        console.debug(data);
         const response = {
             url: data.url,
             title: data.title,
@@ -107,7 +106,7 @@ async function GetMetadataFromLink(req, res) {
         }
         res.send(response);
     })
-    .catch(err=>res.status(500).send());
+    .catch(err=>res.status(500).send(err));
 }
 
 export {
