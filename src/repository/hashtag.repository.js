@@ -2,7 +2,7 @@ import { db } from "../database/database.connection.js";
 
 
 export async function getPostsByHashtag(hashtag) {
-    const { rows, rowCount } = await db.query(`
+    const feed = await db.query(`
     
     SELECT
     users.id AS user_id, users.username, users.picture_url AS profile_picture,
@@ -27,7 +27,7 @@ export async function getPostsByHashtag(hashtag) {
     ORDER BY posts.created_at DESC
     LIMIT 20;
     `, [hashtag])
-    return [rows, rowCount]
+    return feed
 }
 
 export async function getTrendingHashtags() {

@@ -4,9 +4,28 @@ import { getPostsByHashtag, getTrendingHashtags } from "../repository/hashtag.re
 
 export async function getbyHashtag(req, res){
     const {hashtag} = req.params
+    const  render = [];
     try{
-        const posts = await getPostsByHashtag(hashtag)
-        res.status(200).send(posts[0])
+        const feed = await getPostsByHashtag(hashtag)
+        feed.rows.forEach((e) => {
+            render.push({
+                post_id: e.post_id,
+                user_id: e.user_id,
+                username: e.username,
+                profile_picture: e.profile_picture,
+                link: e.link,
+                message: e.message,
+                created_at: e.created_at,
+                likes: {
+                    count_likes: e.count_likes,
+                    likers: e.likers
+                }
+            })
+        })
+        console.log(render)
+
+        res.status(200).send(render);
+
     }catch (error) {
         res.status(500).send(error.message)
     }
