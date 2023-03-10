@@ -22,8 +22,8 @@ export async function getPostsByHashtag(hashtag) {
     LEFT JOIN hashtags as h
         ON ph.hashtag_id = h.id
 
+    WHERE h.hashtag_name = $1
     GROUP BY users.id, posts.id
-    HAVING $1 IN hashtags
     ORDER BY posts.created_at DESC
     LIMIT 20;
     `, [hashtag])
