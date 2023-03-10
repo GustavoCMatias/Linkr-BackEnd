@@ -13,3 +13,19 @@ export async function getPostsByHashtag(hashtag){
     `, [hashtag])
     return [rows, rowCount]
 }
+
+export async function getTrendingHashtags(){
+    const {rows} = await db.query(`
+    SELECT h.hashtag_name, COUNT(p.id)
+    FROM hashtags AS h
+        JOIN posts_hashtags AS ph
+            ON ph.hashtag_id = h.id 
+        JOIN posts AS p
+            ON p.id = ph.post_id
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 10
+    `)
+    return rows
+
+}
