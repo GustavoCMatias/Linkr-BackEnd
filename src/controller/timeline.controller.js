@@ -6,11 +6,70 @@ async function createPost(req, res) {
     const { link, message } = req.body
     const findUser = res.locals.user
 
+    const hashtags = []
+
+    const arrMessage = message.split('#')
+
+    const new_message = arrMessage[0]
+
+    if (message && arrMessage[1]) {
+        arrMessage.shift()
+        arrMessage.forEach(item => {
+            if (item.split(' ')[0].length > 0) hashtags.push(item.split(' ')[0])
+        })
+
+    }
+
     try {
-        await db.query(`
+        const {rows} = await db.query(`
         INSERT INTO posts (link, message, user_id)
-        VALUES ($1, $2, $3)`,
-            [link, message, findUser.rows[0].user_id])
+        VALUES ($1, $2, $3)
+        RETURNING id`,
+            [link, new_message, findUser.rows[0].user_id])
+        const postId = rows[0].id
+
+        const placeHolder = hashtags.map((_, i) => `$${i + 1}`).join(", ")
+        const { rows: hashtagNameId } = await db.query(`
+        SELECT hashtag_name, id
+        FROM hashtags
+        WHERE hashtag_name IN (${placeHolder})`,
+            hashtags)
+
+
+        const remainingHashtags = hashtags.filter(item => {
+            let match = false
+            hashtagNameId.forEach(each => {
+                if (item === each.hashtag_name) return match = true
+            })
+            return !match
+        })
+
+        const placeHolder2 = remainingHashtags.map((_, i) => `$${i + 1}`).join("), (")
+
+        let hashtag_ids
+
+        if (remainingHashtags.length > 0) {
+            const { rows: rows3 } = await db.query(`
+            INSERT INTO hashtags (hashtag_name)
+            VALUES (${placeHolder2})
+            RETURNING hashtag_name, id`,
+                remainingHashtags
+            )
+            hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
+        } else{
+            hashtag_ids = hashtagNameId.map(item => item.id)
+        }
+
+
+        const placeHolder3 = hashtag_ids.map((_, i) => `$${i + 2}`).join(", $1), (")
+
+        hashtag_ids.unshift(postId)
+
+        await db.query(`
+        INSERT INTO posts_hashtags (hashtag_id, post_id)
+        VALUES (${placeHolder3}, $1)`,
+            hashtag_ids
+        )
 
         res.sendStatus(201)
     } catch (error) {
@@ -40,7 +99,7 @@ async function getTimeline(req, res) {
         ORDER BY posts.created_at DESC
         LIMIT 20;
         `)
-        
+
         let render = [];
         const mapRender = feed.rows.forEach((e) => {
             render.push({
@@ -96,7 +155,7 @@ async function updatePost(req, res) {
 }
 
 async function GetMetadataFromLink(req, res) {
-    const {url} = req.headers;
+    const { url } = req.headers;
     getLinkPreview(url).then((data) => {
         const response = {
             url: data.url,
@@ -106,7 +165,7 @@ async function GetMetadataFromLink(req, res) {
         }
         res.send(response);
     })
-    .catch(err=>res.status(500).send(err));
+        .catch(err => res.status(500).send(err));
 }
 
 export {
