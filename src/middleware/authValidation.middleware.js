@@ -5,7 +5,6 @@ export default async function tokenValidation(req, res, next){
     const {authorization} = await req.headers
     const token = await authorization?.replace("Bearer ", "")
 
-    console.log(authorization, token)
 
     if(!token) return res.sendStatus(401)
 
