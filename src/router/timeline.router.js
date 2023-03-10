@@ -1,7 +1,5 @@
 import { Router } from "express";
-import { createPost, GetMetadataFromLink, getTimeline } from "../controller/timeline.controller.js";
-import { validateCreatePost } from "../middleware/timeline.middleware.js";
-import { createPost, deletePost, getTimeline, updatePost } from "../controller/timeline.controller.js";
+import { createPost, deletePost, getTimeline, updatePost, GetMetadataFromLink } from "../controller/timeline.controller.js";
 import { deleteLikesPost, validateCreatePost, validateDeleteOrPut, validateToken } from "../middleware/timeline.middleware.js";
 
 const feed = Router()

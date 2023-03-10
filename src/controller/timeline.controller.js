@@ -25,29 +25,40 @@ async function getTimeline(req, res) {
 
         const feed = await db.query(`
         SELECT
-        users.id AS user_id, users.username,
+        users.id AS user_id, users.username, users.picture_url AS profile_picture,
         posts.id AS post_id, posts.link, posts.message, posts.created_at,
-        count(likes.post_id) AS count_likes
-        FROM users
-        JOIN posts
-        ON users.id = posts.user_id
-        LEFT JOIN likes
-        ON posts.id = likes.post_id
+        COUNT(likes.post_id) AS count_likes,
+        array_agg(likers.username) AS likers
+        FROM posts
+        JOIN users
+            ON users.id = posts.user_id
+        LEFT JOIN likes 
+            ON posts.id = likes.post_id
+        LEFT JOIN users AS likers 
+            ON likes.user_id = likers.id
         GROUP BY users.id, posts.id
         ORDER BY posts.created_at DESC
         LIMIT 20;
         `)
-
-        // PENSAR EM UM JEITO DE RENDERIZAR O NOME DAS PESSOAS QUE CURTIRAM
         
-        const trending = await db.query(`
-        SELECT count(hashtags.id) AS count_trending
-        FROM hashtags
-        ORDER BY count_trending DESC
-        LIMIT 10;
-        `)
+        let render = [];
+        const mapRender = feed.rows.forEach((e) => {
+            render.push({
+                post_id: e.post_id,
+                user_id: e.user_id,
+                username: e.username,
+                profile_picture: e.profile_picture,
+                link: e.link,
+                message: e.message,
+                created_at: e.created_at,
+                likes: {
+                    count_likes: e.count_likes,
+                    likers: e.likers
+                }
+            })
+        })
 
-        res.status(200).send(feed.rows);
+        res.status(200).send(render);
 
     } catch (error) {
         res.status(500).send(error.message)
