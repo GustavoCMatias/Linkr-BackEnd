@@ -2,9 +2,8 @@ import { searchToken } from "../repository/auth.repository.js"
 
 
 export default async function tokenValidation(req, res, next){
-    const {authorization} = await req.headers
-    const token = await authorization?.replace("Bearer ", "")
-
+    const {authorization} = req.headers
+    const token = authorization?.replace("Bearer ", "")
 
     if(!token) return res.sendStatus(401)
 
