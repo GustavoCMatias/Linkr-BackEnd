@@ -9,21 +9,27 @@ export async function getPostsByHashtag(hashtag) {
     posts.id AS post_id, posts.link, posts.message, posts.created_at,
     COUNT(likes.post_id) AS count_likes,
     array_agg(likers.username) AS likers,
-    array_agg(h.hashtag_name) AS hashtags
+    info.tags AS tags
     FROM posts
     JOIN users
         ON users.id = posts.user_id
+        
+    LEFT JOIN (
+        SELECT
+            posts.id AS id,
+            array_agg(h.hashtag_name) AS tags
+        FROM posts
+        LEFT JOIN posts_hashtags AS ph ON posts.id = ph.post_id
+        LEFT JOIN hashtags AS h ON ph.hashtag_id = h.id
+        GROUP BY posts.id
+    ) AS info ON info.id = posts.id
+    
     LEFT JOIN likes 
         ON posts.id = likes.post_id
     LEFT JOIN users AS likers 
         ON likes.user_id = likers.id
-    LEFT JOIN posts_hashtags as ph
-        ON posts.id = ph.post_id
-    LEFT JOIN hashtags as h
-        ON ph.hashtag_id = h.id
-
-    WHERE h.hashtag_name = $1
-    GROUP BY users.id, posts.id
+    WHERE $1 = ANY(info.tags)
+    GROUP BY users.id, posts.id, info.tags
     ORDER BY posts.created_at DESC
     LIMIT 20;
     `, [hashtag])

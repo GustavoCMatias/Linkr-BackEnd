@@ -1,7 +1,6 @@
 import { getPostsByHashtag, getTrendingHashtags } from "../repository/hashtag.repository.js"
 
 
-
 export async function getbyHashtag(req, res){
     const {hashtag} = req.params
     const  render = [];
@@ -19,10 +18,10 @@ export async function getbyHashtag(req, res){
                 likes: {
                     count_likes: e.count_likes,
                     likers: e.likers
-                }
+                },
+                hashtags: e.tags
             })
         })
-        console.log(render)
 
         res.status(200).send(render);
 
