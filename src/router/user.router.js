@@ -1,10 +1,14 @@
 import { Router } from "express";
-import { GetUserInfo, GetUsersBySearch } from "../controller/user.controller.js";
+import { FollowUser, GetUserInfo, GetUsersBySearch, UnfollowUser } from "../controller/user.controller.js";
 import tokenValidation from "../middleware/authValidation.middleware.js";
+import { validateSchema } from "../middleware/validate.schema.js";
+import { followUser } from "../schema/user.schema.js";
 
 const userRouter = Router();
 
 userRouter.get('/user/:id', tokenValidation, GetUserInfo);
-userRouter.get('/users/:search',GetUsersBySearch);
+userRouter.get('/users/:search',tokenValidation,GetUsersBySearch);
+userRouter.post('/user/follow', validateSchema(followUser),tokenValidation, FollowUser)
+userRouter.post('/user/unfollow', validateSchema(followUser),tokenValidation, UnfollowUser)
 
 export default userRouter;
