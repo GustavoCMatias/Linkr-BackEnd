@@ -12,3 +12,8 @@ export const register = joi.object({
     password: joi.string().empty().required(),
   });
   
+  export const followUser = joi.object({
+    userId: joi.string().required()
+  });
+  
+
