@@ -29,3 +29,8 @@ export async function deleteFollowUser(userId, followUserId){
     const rows = await db.query("DELETE FROM user_follows WHERE user_id = $1 AND user_follow_id = $2",[userId,followUserId]);
     return rows;
 }
+
+export async function getFollowersForUser(userId){
+    const {rows} = await db.query("SELECT user_follow_id FROM user_follows WHERE user_id = $1",[userId]);
+    return rows;
+}

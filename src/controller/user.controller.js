@@ -1,4 +1,4 @@
-import { deleteFollowUser, followUser, searchUserById, searchUsersByString, userFollowsUser } from "../repository/user.repository.js";
+import { deleteFollowUser, followUser, getFollowersForUser, searchUserById, searchUsersByString, userFollowsUser } from "../repository/user.repository.js";
 
 export async function GetUserInfo(req,res){
     const userId = req.params.id;
@@ -16,6 +16,7 @@ export async function GetUserInfo(req,res){
 export async function GetUsersBySearch(req,res){
     const searchTerm = req.params.search;
     const userId = res.locals.user;
+    console.log(userId,searchTerm)
     try {
         const searchRow = await searchUsersByString(userId,searchTerm);
         res.send([searchRow]);
@@ -45,6 +46,16 @@ export async function UnfollowUser(req,res){
         if(userRowCount==0) return res.status(404).send('User not found');
         await deleteFollowUser(userRequestingId,userId);
         res.send();
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+export async function GetUserFollows(req,res){
+    const userId = res.locals.user;
+    try {
+        const rows = await getFollowersForUser(userId);
+        res.send(rows);
     } catch (error) {
         res.status(500).send(error);
     }
