@@ -19,7 +19,17 @@ export async function getbyHashtag(req, res){
                     count_likes: e.count_likes,
                     likers: e.likers
                 },
-                hashtags: e.tags
+                hashtags: e.tags,
+                comments: {
+                    count_comments: e.count_comments,
+                    comments: e.content.map((content, idx) => {
+                        return{
+                            content: content,
+                            author: e.comment_user[idx],
+                            authorPhoto: e.comment_pic[idx]
+                        }
+                    })
+            }
             })
         })
 
