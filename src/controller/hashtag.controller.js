@@ -3,9 +3,10 @@ import { getPostsByHashtag, getTrendingHashtags } from "../repository/hashtag.re
 
 export async function getbyHashtag(req, res){
     const {hashtag} = req.params
+    const user_id = res.locals.user
     const  render = [];
     try{
-        const feed = await getPostsByHashtag(hashtag)
+        const feed = await getPostsByHashtag(hashtag, user_id)
         feed.rows.forEach((e) => {
             render.push({
                 post_id: e.post_id,
@@ -25,8 +26,10 @@ export async function getbyHashtag(req, res){
                     comments: e.content.map((content, idx) => {
                         return{
                             content: content,
+                            author_id: e.commenter_id[idx],
                             author: e.comment_user[idx],
-                            authorPhoto: e.comment_pic[idx]
+                            authorPhoto: e.comment_pic[idx],
+                            user_follows: e.user_follows[idx]
                         }
                     })
             }

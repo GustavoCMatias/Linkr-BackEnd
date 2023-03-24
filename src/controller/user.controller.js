@@ -16,7 +16,6 @@ export async function GetUserInfo(req,res){
 export async function GetUsersBySearch(req,res){
     const searchTerm = req.params.search;
     const userId = res.locals.user;
-    console.log(userId,searchTerm)
     try {
         const searchRow = await searchUsersByString(userId,searchTerm);
         res.send([searchRow]);
