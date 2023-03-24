@@ -353,16 +353,15 @@ async function getTimelineById(req, res) {
 
 async function GetMetadataFromLink(req, res) {
     const { url } = req.headers;
-    getLinkPreview(url).then((data) => {
+    getLinkPreview(url).then(data => {
         const response = {
-            url: data.url,
-            title: data.title,
-            description: data.description,
-            image: data.images
+            url: data.url||"",
+            title: data.title||"",
+            description: data.description||"",
+            image: data.images||''
         }
         return res.send(response);
     })
-        .catch(err => {res.status(500).send(err)});
 }
 
 export {
