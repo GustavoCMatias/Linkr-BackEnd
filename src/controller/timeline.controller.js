@@ -79,7 +79,7 @@ async function createPost(req, res) {
 }
 
 async function getTimeline(req, res) {
-    const {requester_id} = req.body
+    const {requester_id} = req.query
     try {
 
         const feed = await db.query(`
@@ -215,7 +215,7 @@ async function updatePost(req, res) {
 
 async function getTimelineById(req, res) {
     const userId = req.params.id;
-    const {requester_id} = req.body
+    const {requester_id} = req.query
     try {
 
         const feed = await db.query(`
