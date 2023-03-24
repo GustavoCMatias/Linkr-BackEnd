@@ -21,7 +21,7 @@ async function createPost(req, res) {
     }
 
     try {
-        const {rows} = await db.query(`
+        const { rows } = await db.query(`
         INSERT INTO posts (link, message, user_id)
         VALUES ($1, $2, $3)
         RETURNING id`,
@@ -56,7 +56,7 @@ async function createPost(req, res) {
                 remainingHashtags
             )
             hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
-        } else{
+        } else {
             hashtag_ids = hashtagNameId.map(item => item.id)
         }
 
@@ -79,7 +79,7 @@ async function createPost(req, res) {
 }
 
 async function getTimeline(req, res) {
-    const {requester_id} = req.query
+    const requester_id = req.query.userId
     try {
 
         const feed = await db.query(`
@@ -94,7 +94,9 @@ async function getTimeline(req, res) {
             comments.username AS comment_user,
             comments.profile_picture AS comment_pic,
             comments.commenter_id as commenter_id,
-			comments.user_follows as user_follows
+			comments.user_follows as user_follows,
+            reposters.repost_users as repost_users,
+	        reposters.count_repost as count_reposts
             
         FROM posts
         JOIN users
@@ -141,8 +143,23 @@ async function getTimeline(req, res) {
         LEFT JOIN likes 
             ON posts.id = likes.post_id
         LEFT JOIN users AS likers 
-            ON likes.user_id = likers.id
-        GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows
+        ON likes.user_id = likers.id
+        LEFT JOIN user_follows
+        ON posts.user_id = user_follows.user_follow_id
+        LEFT JOIN (
+            SELECT 
+                posts.id as post_id,
+                COUNT(reposts.post_id) AS count_repost,
+                array_agg(users.username) AS repost_users
+            FROM reposts
+            JOIN posts
+            ON reposts.post_id = posts.id
+            JOIN users
+            ON reposts.user_id = users.id
+            GROUP BY reposts.post_id, posts.id
+        )AS reposters ON reposters.post_id = posts.id
+        WHERE user_follows.user_id = $1
+        GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows,reposters.repost_users,reposters.count_repost
         ORDER BY posts.created_at DESC
         LIMIT 20;
         `, [requester_id])
@@ -165,7 +182,7 @@ async function getTimeline(req, res) {
                 comments: {
                     count_comments: e.count_comments,
                     comments: e.content.map((content, idx) => {
-                        return{
+                        return {
                             content: content,
                             author_id: e.commenter_id[idx],
                             author: e.comment_user[idx],
@@ -173,7 +190,12 @@ async function getTimeline(req, res) {
                             user_follows: e.user_follows[idx]
                         }
                     })
-            }})
+                },
+                reposts: {
+                    count_reposts: e.count_reposts||0,
+                    users: e.repost_users||[]
+                }
+            })
         })
 
         res.status(200).send(render);
@@ -215,7 +237,7 @@ async function updatePost(req, res) {
 
 async function getTimelineById(req, res) {
     const userId = req.params.id;
-    const {requester_id} = req.query
+    const { requester_id } = req.query
     try {
 
         const feed = await db.query(`
@@ -283,8 +305,8 @@ async function getTimelineById(req, res) {
         ORDER BY posts.created_at DESC
         LIMIT 20;
         `, [requester_id, userId])
-        
-        
+
+
         let render = [];
         const mapRender = feed.rows.forEach((e) => {
             render.push({
@@ -303,7 +325,7 @@ async function getTimelineById(req, res) {
                 comments: {
                     count_comments: e.count_comments,
                     comments: e.content.map((content, idx) => {
-                        return{
+                        return {
                             content: content,
                             author_id: e.commenter_id[idx],
                             author: e.comment_user[idx],
@@ -311,7 +333,7 @@ async function getTimelineById(req, res) {
                             user_follows: e.user_follows[idx]
                         }
                     })
-            }
+                }
             })
         })
 
@@ -331,9 +353,10 @@ async function GetMetadataFromLink(req, res) {
             description: data.description,
             image: data.images
         }
-        res.send(response);
+        return res.send(response);
+        console.log('asdfasdf')
     })
-        .catch(err => res.status(500).send(err));
+        .catch(err => {console.log('asdfasdf');res.status(500).send(err)});
 }
 
 export {
