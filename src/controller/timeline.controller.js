@@ -252,7 +252,8 @@ async function getTimelineById(req, res) {
             comments.username AS comment_user,
             comments.profile_picture AS comment_pic,
             comments.commenter_id as commenter_id,
-			comments.user_follows as user_follows
+			comments.user_follows as user_follows,
+            COUNT(reposts.user_id) as count_reposts
             
         FROM posts
         JOIN users
@@ -300,8 +301,10 @@ async function getTimelineById(req, res) {
             ON posts.id = likes.post_id
         LEFT JOIN users AS likers 
             ON likes.user_id = likers.id
+        LEFT JOIN reposts
+                ON reposts.post_id=posts.id
         WHERE users.id = $2
-        GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows
+        GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows,reposts.post_id
         ORDER BY posts.created_at DESC
         LIMIT 20;
         `, [requester_id, userId])
@@ -333,6 +336,10 @@ async function getTimelineById(req, res) {
                             user_follows: e.user_follows[idx]
                         }
                     })
+                },
+                reposts: {
+                    count_reposts: e.count_reposts||0,
+                    users: e.repost_users||[]
                 }
             })
         })
