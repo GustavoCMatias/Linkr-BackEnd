@@ -16,7 +16,9 @@ export async function getPostsByHashtag(hashtag, user_id) {
     comments.username AS comment_user,
     comments.profile_picture AS comment_pic,
     comments.commenter_id as commenter_id,
-    comments.user_follows as user_follows
+    comments.user_follows as user_follows,
+    reposters.repost_users as repost_users,
+	reposters.count_repost as count_reposts
     
 FROM posts
 JOIN users
@@ -64,8 +66,22 @@ LEFT JOIN likes
     ON posts.id = likes.post_id
 LEFT JOIN users AS likers 
     ON likes.user_id = likers.id
+    LEFT JOIN user_follows
+    ON posts.user_id = user_follows.user_follow_id
+    LEFT JOIN (
+        SELECT 
+            posts.id as post_id,
+            COUNT(reposts.post_id) AS count_repost,
+            array_agg(users.username) AS repost_users
+        FROM reposts
+        JOIN posts
+        ON reposts.post_id = posts.id
+        JOIN users
+        ON reposts.user_id = users.id
+        GROUP BY reposts.post_id, posts.id
+    )AS reposters ON reposters.post_id = posts.id
 WHERE $2 = ANY(info.tags)
-GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows
+GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows,reposters.repost_users,reposters.count_repost
 ORDER BY posts.created_at DESC
 LIMIT 20;
 `, [user_id, hashtag])

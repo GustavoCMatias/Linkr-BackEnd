@@ -1,11 +1,11 @@
 import { getPostsByHashtag, getTrendingHashtags } from "../repository/hashtag.repository.js"
 
 
-export async function getbyHashtag(req, res){
-    const {hashtag} = req.params
+export async function getbyHashtag(req, res) {
+    const { hashtag } = req.params
     const user_id = res.locals.user
-    const  render = [];
-    try{
+    const render = [];
+    try {
         const feed = await getPostsByHashtag(hashtag, user_id)
         feed.rows.forEach((e) => {
             render.push({
@@ -24,7 +24,7 @@ export async function getbyHashtag(req, res){
                 comments: {
                     count_comments: e.count_comments,
                     comments: e.content.map((content, idx) => {
-                        return{
+                        return {
                             content: content,
                             author_id: e.commenter_id[idx],
                             author: e.comment_user[idx],
@@ -32,22 +32,26 @@ export async function getbyHashtag(req, res){
                             user_follows: e.user_follows[idx]
                         }
                     })
-            }
+                },
+                reposts: {
+                    count_reposts: e.count_reposts || 0,
+                    users: e.repost_users || []
+                }
             })
         })
 
         res.status(200).send(render);
 
-    }catch (error) {
+    } catch (error) {
         res.status(500).send(error.message)
     }
 }
 
-export async function trendingHashtags(_, res){
-    try{
+export async function trendingHashtags(_, res) {
+    try {
         const hashtags = await getTrendingHashtags()
         res.status(200).send(hashtags)
-    }catch (error) {
+    } catch (error) {
         res.status(500).send(error.message)
     }
 }
