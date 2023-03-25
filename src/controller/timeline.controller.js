@@ -377,7 +377,7 @@ async function GetMetadataFromLink(req, res) {
             image: data.images||''
         }
         return res.send(response);
-    })
+    }).catch(err=>res.status(500).send(err))
 }
 
 export {
