@@ -27,27 +27,41 @@ async function createPost(req, res) {
         RETURNING id`,
             [link, new_message, findUser.rows[0].user_id])
         const postId = rows[0].id
+        
+        if(hashtags.length !== 0){
+            const placeHolder = hashtags.map((_, i) => `$${i + 1}`).join(", ")
+            const { rows: hashtagNameId } = await db.query(`
+            SELECT hashtag_name, id
+            FROM hashtags
+            WHERE hashtag_name IN (${placeHolder})`,
+                hashtags)
 
-        const placeHolder = hashtags.map((_, i) => `$${i + 1}`).join(", ")
-        const { rows: hashtagNameId } = await db.query(`
-        SELECT hashtag_name, id
-        FROM hashtags
-        WHERE hashtag_name IN (${placeHolder})`,
-            hashtags)
 
-
-        const remainingHashtags = hashtags.filter(item => {
-            let match = false
-            hashtagNameId.forEach(each => {
-                if (item === each.hashtag_name) return match = true
+            const remainingHashtags = hashtags.filter(item => {
+                let match = false
+                hashtagNameId.forEach(each => {
+                    if (item === each.hashtag_name) return match = true
+                })
+                return !match
             })
-            return !match
-        })
 
-        const placeHolder2 = remainingHashtags.map((_, i) => `$${i + 1}`).join("), (")
+            const placeHolder2 = remainingHashtags.map((_, i) => `$${i + 1}`).join("), (")
 
-        let hashtag_ids
+            let hashtag_ids
 
+<<<<<<< HEAD
+            if (remainingHashtags.length > 0) {
+                const { rows: rows3 } = await db.query(`
+                INSERT INTO hashtags (hashtag_name)
+                VALUES (${placeHolder2})
+                RETURNING hashtag_name, id`,
+                    remainingHashtags
+                )
+                hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
+            } else{
+                hashtag_ids = hashtagNameId.map(item => item.id)
+            }
+=======
         if (remainingHashtags.length > 0) {
             const { rows: rows3 } = await db.query(`
             INSERT INTO hashtags (hashtag_name)
@@ -59,17 +73,19 @@ async function createPost(req, res) {
         } else {
             hashtag_ids = hashtagNameId.map(item => item.id)
         }
+>>>>>>> main
 
 
-        const placeHolder3 = hashtag_ids.map((_, i) => `$${i + 2}`).join(", $1), (")
+            const placeHolder3 = hashtag_ids.map((_, i) => `$${i + 2}`).join(", $1), (")
 
-        hashtag_ids.unshift(postId)
+            hashtag_ids.unshift(postId)
 
-        await db.query(`
-        INSERT INTO posts_hashtags (hashtag_id, post_id)
-        VALUES (${placeHolder3}, $1)`,
-            hashtag_ids
-        )
+            await db.query(`
+            INSERT INTO posts_hashtags (hashtag_id, post_id)
+            VALUES (${placeHolder3}, $1)`,
+                hashtag_ids
+            )
+        }
 
         res.sendStatus(201)
     } catch (error) {
