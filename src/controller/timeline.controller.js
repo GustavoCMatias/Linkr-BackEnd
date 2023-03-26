@@ -49,19 +49,6 @@ async function createPost(req, res) {
 
             let hashtag_ids
 
-<<<<<<< HEAD
-            if (remainingHashtags.length > 0) {
-                const { rows: rows3 } = await db.query(`
-                INSERT INTO hashtags (hashtag_name)
-                VALUES (${placeHolder2})
-                RETURNING hashtag_name, id`,
-                    remainingHashtags
-                )
-                hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
-            } else{
-                hashtag_ids = hashtagNameId.map(item => item.id)
-            }
-=======
         if (remainingHashtags.length > 0) {
             const { rows: rows3 } = await db.query(`
             INSERT INTO hashtags (hashtag_name)
@@ -73,7 +60,6 @@ async function createPost(req, res) {
         } else {
             hashtag_ids = hashtagNameId.map(item => item.id)
         }
->>>>>>> main
 
 
             const placeHolder3 = hashtag_ids.map((_, i) => `$${i + 2}`).join(", $1), (")
