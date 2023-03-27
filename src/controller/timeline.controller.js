@@ -27,8 +27,8 @@ async function createPost(req, res) {
         RETURNING id`,
             [link, new_message, findUser.rows[0].user_id])
         const postId = rows[0].id
-        
-        if(hashtags.length !== 0){
+
+        if (hashtags.length !== 0) {
             const placeHolder = hashtags.map((_, i) => `$${i + 1}`).join(", ")
             const { rows: hashtagNameId } = await db.query(`
             SELECT hashtag_name, id
@@ -49,31 +49,17 @@ async function createPost(req, res) {
 
             let hashtag_ids
 
-<<<<<<< HEAD
             if (remainingHashtags.length > 0) {
                 const { rows: rows3 } = await db.query(`
-                INSERT INTO hashtags (hashtag_name)
-                VALUES (${placeHolder2})
-                RETURNING hashtag_name, id`,
-                    remainingHashtags
-                )
-                hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
-            } else{
-                hashtag_ids = hashtagNameId.map(item => item.id)
-            }
-=======
-        if (remainingHashtags.length > 0) {
-            const { rows: rows3 } = await db.query(`
             INSERT INTO hashtags (hashtag_name)
             VALUES (${placeHolder2})
             RETURNING hashtag_name, id`,
-                remainingHashtags
-            )
-            hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
-        } else {
-            hashtag_ids = hashtagNameId.map(item => item.id)
-        }
->>>>>>> main
+                    remainingHashtags
+                )
+                hashtag_ids = hashtagNameId.concat(rows3).map(item => item.id)
+            } else {
+                hashtag_ids = hashtagNameId.map(item => item.id)
+            }
 
 
             const placeHolder3 = hashtag_ids.map((_, i) => `$${i + 2}`).join(", $1), (")
@@ -96,6 +82,15 @@ async function createPost(req, res) {
 
 async function getTimeline(req, res) {
     const requester_id = req.query.userId
+
+    const { offset } = req.query;
+    console.log('OFFSET:', offset)
+    let offsetQuery = '';
+
+    if (offset) {
+        offsetQuery = `AND posts.id < ${Number(offset)}`;
+    }
+
     try {
 
         const feed = await db.query(`
@@ -174,7 +169,7 @@ async function getTimeline(req, res) {
             ON reposts.user_id = users.id
             GROUP BY reposts.post_id, posts.id
         )AS reposters ON reposters.post_id = posts.id
-        WHERE user_follows.user_id = $1
+        WHERE user_follows.user_id = $1 ${offsetQuery}
         GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows,reposters.repost_users,reposters.count_repost
         ORDER BY posts.created_at DESC
         LIMIT 20;
@@ -208,8 +203,8 @@ async function getTimeline(req, res) {
                     })
                 },
                 reposts: {
-                    count_reposts: e.count_reposts||0,
-                    users: e.repost_users||[]
+                    count_reposts: e.count_reposts || 0,
+                    users: e.repost_users || []
                 }
             })
         })
@@ -254,6 +249,9 @@ async function updatePost(req, res) {
 async function getTimelineById(req, res) {
     const userId = req.params.id;
     const { requester_id } = req.query
+
+    
+
     try {
 
         const feed = await db.query(`
@@ -319,7 +317,7 @@ async function getTimelineById(req, res) {
             ON likes.user_id = likers.id
         LEFT JOIN reposts
                 ON reposts.post_id=posts.id
-        WHERE users.id = $2
+        WHERE users.id = $2 
         GROUP BY users.id, posts.id, info.tags, comments.content, comments.username, comments.profile_picture, comments.count_comments, comments.commenter_id, comments.user_follows,reposts.post_id
         ORDER BY posts.created_at DESC
         LIMIT 20;
@@ -354,8 +352,8 @@ async function getTimelineById(req, res) {
                     })
                 },
                 reposts: {
-                    count_reposts: e.count_reposts||0,
-                    users: e.repost_users||[]
+                    count_reposts: e.count_reposts || 0,
+                    users: e.repost_users || []
                 }
             })
         })
@@ -371,14 +369,16 @@ async function GetMetadataFromLink(req, res) {
     const { url } = req.headers;
     getLinkPreview(url).then(data => {
         const response = {
-            url: data.url||"",
-            title: data.title||"",
-            description: data.description||"",
-            image: data.images||''
+            url: data.url || "",
+            title: data.title || "",
+            description: data.description || "",
+            image: data.images || ''
         }
         return res.send(response);
-    }).catch(err=>res.status(500).send(err))
+    }).catch(err => res.status(500).send(err))
 }
+
+
 
 export {
     createPost,
@@ -386,5 +386,5 @@ export {
     GetMetadataFromLink,
     deletePost,
     updatePost,
-    getTimelineById
+    getTimelineById,
 }
